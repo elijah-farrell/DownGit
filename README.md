@@ -1,28 +1,102 @@
-<h1> <img src="https://github.com/MinhasKamal/DownGit/raw/master/res/images/downgit.png" width="20" height=auto /> DownGit </h1>
+# DownGit
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=5KR6BA9MYTM62&no_recurring=0&currency_code=USD)
+A modern web application for downloading GitHub files and folders as ZIP archives. Built with Next.js, React, and Three.js for an immersive user experience.
 
-#### Create GitHub Resource Download Link
+## Features
 
-With this tool you can directly download or create download link to any GitHub **public directory or file**.
+- **GitHub Integration**: Download individual files or entire directories from GitHub repositories
+- **Modern UI**: Beautiful, responsive interface built with Tailwind CSS and Radix UI components
+- **3D Visuals**: Interactive 3D background using Three.js and React Three Fiber
+- **Real-time Progress**: Track download progress with detailed file information
+- **Shareable Links**: Generate shareable download links for easy sharing
 
-### Website
+## Project Structure
 
-[DownGit ↑](https://minhaskamal.github.io/DownGit)
+```
+DownGit/
+├── app/                    # Next.js app directory
+│   ├── layout.tsx         # Root layout component
+│   ├── page.tsx           # Main page component
+│   └── globals.css        # Global styles
+├── components/             # UI components
+│   └── ui/                # Radix UI components
+├── lib/                   # Utility libraries
+│   ├── downgit-service.ts # Core DownGit functionality
+│   └── utils.ts           # Helper functions
+├── landing-page.tsx       # Main landing page component
+├── package.json           # Project dependencies
+└── tailwind.config.ts     # Tailwind CSS configuration
+```
 
-### How to Use?
+## Getting Started
 
-<table><tr><td> <img src="https://cloud.githubusercontent.com/assets/5456665/17822364/940bded8-6678-11e6-9603-b84d75bccec1.gif" /> </td></tr></table>
+### Prerequisites
 
-##### Advanced Usage
+- Node.js 18+ 
+- npm or yarn
 
-A typical download URL will look like this- `https://minhaskamal.github.io/DownGit/#/home?url=<link>&fileName=<name>&rootDirectory=<true or false or name>`
+### Installation
 
-Now, if you want to download this directory- **`https://github.com/MinhasKamal/DownGit/tree/master/res/images`** with this file name- **`DownGit-Images.zip`** and this root directory name- **`ImagesOfDownGit`**, then the URL will be- https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/MinhasKamal/DownGit/tree/master/res/images&fileName=DownGit-Images&rootDirectory=ImagesOfDownGit
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd DownGit
+```
 
-In default, value of `fileName` and `rootDirectory` is set to the name of the downloading file or directory. If you do not want to add the directory itself in the zip, then set `rootDirectory=false`. Like: this link- https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/MinhasKamal/DownGit/tree/master/res/images&rootDirectory=false, will download a file named **`images.zip`**; however the root directory- `"images"`, will not be included in the zip.
+2. Install dependencies:
+```bash
+npm install
+```
 
-If you want to download file- **`https://github.com/MinhasKamal/DownGit/blob/master/res/images/downgit.png`** with name- **`DownGitIcon.zip`**, then the link will be- https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/MinhasKamal/DownGit/blob/master/res/images/downgit.png&fileName=DownGitIcon
+3. Run the development server:
+```bash
+npm run dev
+```
 
-### License
-<a rel="license" href="https://opensource.org/licenses/MIT"><img alt="MIT License" src="https://cloud.githubusercontent.com/assets/5456665/18950087/fbe0681a-865f-11e6-9552-e59d038d5913.png" width="60em" height=auto/></a><br/><a href="https://github.com/MinhasKamal/DownGit">DownGit</a> is licensed under <a rel="license" href="https://opensource.org/licenses/MIT">MIT License</a>.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Building for Production
+
+```bash
+npm run build
+npm start
+```
+
+## Usage
+
+1. **Paste GitHub URL**: Enter a GitHub file or directory URL in the input field
+2. **Click Download**: The application will process the URL and download the content
+3. **Track Progress**: Monitor download progress in real-time
+4. **Share Links**: Generate shareable download links for easy distribution
+
+## Supported URL Formats
+
+- **Repository**: `https://github.com/user/repo`
+- **Branch**: `https://github.com/user/repo/tree/branch`
+- **Directory**: `https://github.com/user/repo/tree/branch/path/to/directory`
+- **File**: `https://github.com/user/repo/blob/branch/path/to/file`
+
+## Technology Stack
+
+- **Frontend**: Next.js 14, React 18, TypeScript
+- **Styling**: Tailwind CSS, Radix UI
+- **3D Graphics**: Three.js, React Three Fiber
+- **State Management**: React Hooks
+- **Build Tool**: Next.js
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Original DownGit concept by Minhas Kamal
+- Built with modern web technologies for enhanced user experience
