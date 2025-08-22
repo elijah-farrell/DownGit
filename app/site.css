@@ -39,8 +39,46 @@ a{
     height: auto;
 }
 
-.home .download-link-box{
-    resize: vertical;
+.home .shareable-link-container{
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.home .shareable-link-container h5{
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.home .shareable-link-container .text-muted{
+    margin-bottom: 15px;
+    font-size: 0.9em;
+}
+
+.home .input-group .form-control{
+    border-right: 0;
+}
+
+.home .input-group .input-group-btn .btn{
+    border-left: 0;
+    background-color: #fff;
+}
+
+.home .input-group .input-group-btn .btn:hover{
+    background-color: #f8f9fa;
+}
+
+.home .input-group .input-group-btn .btn[ng-click="clearUrl()"]{
+    font-weight: bold;
+    color: #666;
+    min-width: 40px;
+}
+
+.home .input-group .input-group-btn .btn[ng-click="clearUrl()"]:hover{
+    color: #333;
+    background-color: #e9ecef;
 }
 
 .home .footer{
