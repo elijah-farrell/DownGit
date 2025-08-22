@@ -1,7 +1,8 @@
 /***********************************************************
-* Developer: Minhas Kamal (minhaskamal024@gmail.com)       *
-* Website: https://github.com/MinhasKamal/DownGit          *
+* Developer: Elijah Farrell                                 *
+* Website: https://github.com/elijah-farrell/DownGit       *
 * License: MIT License                                     *
+* Based on original DownGit by Minhas Kamal                *
 ***********************************************************/
 
 var siteHeaderText = {};
