@@ -160,7 +160,7 @@ export default function Component() {
         (progress) => setProgress(progress)
       )
       
-      setShareableLink(`https://downgit.github.io/#/home?url=${encodeURIComponent(githubUrl)}`)
+      setShareableLink(`${window.location.origin}?url=${encodeURIComponent(githubUrl)}`)
       setShowShareable(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred during download")
@@ -184,6 +184,46 @@ export default function Component() {
     }, 300)
   }
 
+  // Handle URL parameters for shareable links
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const urlParam = urlParams.get('url')
+    
+    if (urlParam && urlParam.trim()) {
+      setGithubUrl(urlParam)
+      // Auto-trigger download with the URL directly
+      setTimeout(() => {
+        handleDownloadWithUrl(urlParam)
+      }, 500)
+    }
+  }, [])
+
+  // Helper function to download with a specific URL
+  const handleDownloadWithUrl = async (url: string) => {
+    if (!url.trim()) return
+
+    setIsDownloading(true)
+    setError("")
+    setProgress({ isProcessing: true, downloadedFiles: 0, totalFiles: 0 })
+
+    try {
+      await downGitService.downloadZippedFiles(
+        url,
+        undefined,
+        undefined,
+        (progress) => setProgress(progress)
+      )
+      
+      setShareableLink(`${window.location.origin}?url=${encodeURIComponent(url)}`)
+      setShowShareable(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred during download")
+    } finally {
+      setIsDownloading(false)
+      setProgress({ isProcessing: false, downloadedFiles: 0, totalFiles: 0 })
+    }
+  }
+
 
 
   const MainContent = () => (
@@ -191,7 +231,16 @@ export default function Component() {
       currentView === 'main' ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
     }`}>
       <div className="text-center mb-8">
-        <h1 className="text-6xl font-bold mb-4">DownGit</h1>
+        <h1 className="text-6xl font-bold mb-4">
+          <a 
+            href="https://github.com/elijah-farrell/DownGit" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-gray-300 transition-colors duration-200 cursor-pointer"
+          >
+            DownGit
+          </a>
+        </h1>
         <h2 className="text-xl text-gray-300">Download GitHub Files & Folders</h2>
       </div>
 
@@ -201,7 +250,7 @@ export default function Component() {
             <Input
               value={githubUrl}
               onChange={(e) => setGithubUrl(e.target.value)}
-              placeholder="Paste GitHub File or Directory Link"
+              placeholder="Paste any GitHub URL (file, folder, repo, or branch)"
               className="flex-1 bg-white/20 border-white/30 text-white placeholder:text-gray-400"
               disabled={isDownloading}
             />
@@ -365,6 +414,26 @@ export default function Component() {
               </div>
             </div>
 
+            <div>
+              <h3 className="text-2xl font-semibold mb-3 text-white">Limitations</h3>
+              <div className="space-y-3 text-gray-300">
+                <div className="bg-white/10 p-4 rounded-lg">
+                  <h4 className="text-white font-semibold mb-2">What DownGit Can't Handle</h4>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li><strong>Very large repositories</strong> (over 1GB or thousands of files)</li>
+                    <li><strong>Private repositories</strong> (unless properly authenticated)</li>
+                    <li><strong>Git LFS files</strong> (Large File Storage files)</li>
+                    <li><strong>Extremely deep directories</strong> (very long file paths)</li>
+                    <li><strong>Rate-limited requests</strong> (GitHub API limits)</li>
+                  </ul>
+                </div>
+                <p className="text-sm text-gray-400">
+                  DownGit is designed for downloading specific files, folders, or smaller repositories. 
+                  For very large projects, consider using <code className="bg-white/20 px-1 rounded">git clone</code> instead.
+                </p>
+              </div>
+            </div>
+
             <div className="text-center pt-4">
               <Button
                 onClick={() => switchView('main')}
@@ -384,12 +453,19 @@ export default function Component() {
       <header className="absolute top-0 left-0 right-0 z-10 p-4 pt-6">
         <nav className="flex justify-between items-center max-w-6xl mx-auto">
           <div className="flex items-center">
-            <img 
-              src="/downgit.png" 
-              alt="DownGit Logo" 
-              className="w-8 h-8 mr-3"
-            />
-            <span className="text-2xl font-bold">DownGit</span>
+            <a 
+              href="https://github.com/elijah-farrell/DownGit" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center hover:opacity-80 transition-opacity duration-200"
+            >
+              <img 
+                src="/downgit.png" 
+                alt="DownGit Logo" 
+                className="w-8 h-8 mr-3"
+              />
+              <span className="text-2xl font-bold">DownGit</span>
+            </a>
           </div>
           <div className="flex space-x-6">
             <button
@@ -413,7 +489,25 @@ export default function Component() {
       )}
 
       <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
-        <p className="text-gray-400 text-sm">DownGit by Elijah Farrell</p>
+        <p className="text-gray-400 text-sm">
+          <a 
+            href="https://github.com/elijah-farrell/DownGit" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-white transition-colors duration-200"
+          >
+            DownGit
+          </a>
+          {' '}by{' '}
+          <a 
+            href="https://github.com/elijah-farrell" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-white transition-colors duration-200"
+          >
+            Elijah Farrell
+          </a>
+        </p>
       </footer>
 
       <Canvas shadows camera={{ position: [30, 30, 30], fov: 50 }} className="absolute inset-0">
