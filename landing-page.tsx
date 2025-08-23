@@ -134,6 +134,7 @@ export default function Component() {
   const [shareableLink, setShareableLink] = useState("")
   const [showShareable, setShowShareable] = useState(false)
   const [error, setError] = useState("")
+  const [inputError, setInputError] = useState("")
   const [currentView, setCurrentView] = useState<'main' | 'how-to-use'>('main')
   const [isAnimating, setIsAnimating] = useState(false)
 
@@ -142,15 +143,82 @@ export default function Component() {
     setShowShareable(false)
     setShareableLink("")
     setError("")
+    setInputError("")
     setProgress({ isProcessing: false, downloadedFiles: 0, totalFiles: 0 })
   }
 
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value
+    setGithubUrl(url)
+    
+    // Clear previous errors
+    setError("")
+    
+    // Validate input as user types (but only if they've typed something)
+    if (url.trim()) {
+      const validation = validateGitHubUrl(url)
+      if (!validation.isValid) {
+        setInputError(validation.error!)
+      } else {
+        setInputError("")
+      }
+    } else {
+      setInputError("")
+    }
+  }
+
+  const validateGitHubUrl = (url: string): { isValid: boolean; error?: string } => {
+    if (!url.trim()) {
+      return { isValid: false, error: "Please enter a GitHub URL" }
+    }
+
+    try {
+      const urlObj = new URL(url)
+      
+      // Check if it's a GitHub URL
+      if (urlObj.hostname !== 'github.com') {
+        return { isValid: false, error: "Please enter a valid GitHub URL (github.com)" }
+      }
+
+      // Check if it has the right path structure
+      const pathParts = urlObj.pathname.split('/').filter(Boolean)
+      if (pathParts.length < 2) {
+        return { isValid: false, error: "Invalid GitHub URL format. Please use a repository, file, or folder URL" }
+      }
+
+      // Check for common invalid patterns
+      if (url.includes('/blob/') && pathParts.length < 5) {
+        return { isValid: false, error: "Invalid file URL. Please make sure you're on the file's page" }
+      }
+
+      if (url.includes('/tree/') && pathParts.length < 4) {
+        return { isValid: false, error: "Invalid folder URL. Please make sure you're on the folder's page" }
+      }
+
+      return { isValid: true }
+    } catch {
+      return { isValid: false, error: "Please enter a valid URL" }
+    }
+  }
+
   const handleDownload = async () => {
-    if (!githubUrl.trim()) return
+    // Validate URL first
+    const validation = validateGitHubUrl(githubUrl)
+    if (!validation.isValid) {
+      setError(validation.error!)
+      return
+    }
 
     setIsDownloading(true)
     setError("")
     setProgress({ isProcessing: true, downloadedFiles: 0, totalFiles: 0 })
+
+    // Add timeout for downloads
+    const timeoutId = setTimeout(() => {
+      if (isDownloading) {
+        setError("Download is taking longer than expected. This might be due to a large repository or slow GitHub response. Please wait or try again later.")
+      }
+    }, 30000) // 30 seconds timeout
 
     try {
       await downGitService.downloadZippedFiles(
@@ -160,18 +228,61 @@ export default function Component() {
         (progress) => setProgress(progress)
       )
       
+      clearTimeout(timeoutId)
       setShareableLink(`${window.location.origin}?url=${encodeURIComponent(githubUrl)}`)
       setShowShareable(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred during download")
+      clearTimeout(timeoutId)
+      let errorMessage = "An error occurred during download"
+      
+      if (err instanceof Error) {
+        // Handle specific error types
+        if (err.message.includes('HTTP error! status: 404')) {
+          errorMessage = "Repository, file, or folder not found. Please check the URL and make sure it's accessible."
+        } else if (err.message.includes('HTTP error! status: 403')) {
+          errorMessage = "Access denied. This repository might be private or require authentication."
+        } else if (err.message.includes('HTTP error! status: 500')) {
+          errorMessage = "GitHub server error. Please try again in a few minutes."
+        } else if (err.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your internet connection and try again."
+        } else if (err.message.includes('timeout')) {
+          errorMessage = "Request timed out. The file or folder might be too large or GitHub might be slow."
+        } else if (err.message.includes('Failed to fetch')) {
+          errorMessage = "Unable to connect to GitHub. Please check your internet connection and try again."
+        } else {
+          errorMessage = err.message
+        }
+      }
+      
+      setError(errorMessage)
     } finally {
+      clearTimeout(timeoutId)
       setIsDownloading(false)
       setProgress({ isProcessing: false, downloadedFiles: 0, totalFiles: 0 })
     }
   }
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareableLink)
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareableLink)
+      // Show success indication
+      const button = document.querySelector('[data-copy-button]') as HTMLButtonElement
+      if (button) {
+        const originalText = button.innerHTML
+        button.innerHTML = '✅ Copied!'
+        button.disabled = true
+        button.className = 'bg-green-500/20 border-green-500/30 text-green-300 hover:bg-green-500/30'
+        
+        // Reset button after 2 seconds
+        setTimeout(() => {
+          button.innerHTML = originalText
+          button.disabled = false
+          button.className = 'bg-white/20 border-white/30 text-white hover:bg-white/30'
+        }, 2000)
+      }
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
   }
 
   const switchView = (view: 'main' | 'how-to-use') => {
@@ -249,9 +360,11 @@ export default function Component() {
           <div className="flex gap-2 mb-4">
             <Input
               value={githubUrl}
-              onChange={(e) => setGithubUrl(e.target.value)}
+              onChange={handleUrlChange}
               placeholder="Paste any GitHub URL (file, folder, repo, or branch)"
-              className="flex-1 bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+              className={`flex-1 bg-white/20 border-white/30 text-white placeholder:text-gray-400 transition-all duration-200 ${
+                inputError ? 'border-red-400/50 bg-red-500/10' : ''
+              }`}
               disabled={isDownloading}
             />
             <Button
@@ -264,11 +377,35 @@ export default function Component() {
               ✕
             </Button>
           </div>
+          
+          {inputError && (
+            <div className="mt-2 p-3 bg-red-500/10 backdrop-blur-sm border border-red-400/30 rounded-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-red-400 text-sm">⚠️</span>
+                <p className="text-red-200 text-sm">{inputError}</p>
+              </div>
+            </div>
+          )}
+          
+          {!inputError && githubUrl.trim() && (
+            <div className="mt-2 p-3 bg-blue-500/10 backdrop-blur-sm border border-blue-400/30 rounded-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-blue-400 text-sm">ℹ️</span>
+                <p className="text-blue-200 text-sm">
+                  <strong>Valid URL detected!</strong> This appears to be a valid GitHub URL format.
+                </p>
+              </div>
+            </div>
+          )}
 
           <Button
             onClick={handleDownload}
-            disabled={!githubUrl.trim() || isDownloading}
-            className="w-full bg-white text-black hover:bg-gray-200 font-semibold"
+            disabled={!githubUrl.trim() || isDownloading || !!inputError}
+            className={`w-full font-semibold transition-all duration-200 ${
+              !githubUrl.trim() || !!inputError
+                ? 'bg-gray-500/50 text-gray-300 cursor-not-allowed'
+                : 'bg-white text-black hover:bg-gray-200'
+            }`}
           >
             {isDownloading ? "Downloading..." : "Download"}
           </Button>
@@ -299,8 +436,32 @@ export default function Component() {
           )}
 
           {error && (
-            <div className="mt-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
-              <p className="text-red-300 text-sm">{error}</p>
+            <div className="mt-4 p-4 bg-red-500/10 backdrop-blur-sm border border-red-500/30 rounded-lg shadow-lg">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <div className="w-5 h-5 bg-red-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-red-400 text-sm">⚠️</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-red-300 font-medium mb-1">Download Error</h4>
+                  <p className="text-red-200 text-sm leading-relaxed">{error}</p>
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      onClick={() => setError("")}
+                      className="text-red-300 hover:text-red-200 text-xs underline hover:no-underline transition-all duration-200"
+                    >
+                      Dismiss
+                    </button>
+                    <button
+                      onClick={() => setGithubUrl("")}
+                      className="text-red-300 hover:text-red-200 text-xs underline hover:no-underline transition-all duration-200"
+                    >
+                      Clear URL
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -318,6 +479,7 @@ export default function Component() {
                   onClick={handleCopyLink}
                   variant="outline"
                   className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+                  data-copy-button
                 >
                   📋 Copy
                 </Button>
