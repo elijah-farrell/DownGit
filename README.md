@@ -10,26 +10,6 @@ A modern web application for downloading GitHub files and folders as ZIP archive
 - **Real-time Progress**: Track download progress with detailed file information
 - **Shareable Links**: Generate shareable download links for easy sharing
 
-## Project Structure
-
-```
-DownGit/
-├── app/                    # Next.js app directory
-│   ├── layout.tsx         # Root layout component
-│   ├── page.tsx           # Main page component
-│   └── globals.css        # Global styles
-├── components/             # UI components
-│   └── ui/                # Radix UI components
-├── lib/                   # Utility libraries
-│   ├── downgit-service.ts # Core DownGit functionality
-│   └── utils.ts           # Helper functions
-├── landing-page.tsx       # Main landing page component
-├── package.json           # Project dependencies
-└── tailwind.config.ts     # Tailwind CSS configuration
-```
-
-## Getting Started
-
 ### Prerequisites
 
 - Node.js 18+ 
