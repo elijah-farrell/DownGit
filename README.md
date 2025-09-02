@@ -19,7 +19,7 @@ A modern web application for downloading GitHub files and folders as ZIP archive
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/elijah-farrell/DownGit.git
 cd DownGit
 ```
 
